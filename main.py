@@ -7,9 +7,9 @@ from urllib.parse import quote
 
 app = FastAPI()
 
-app.mount("/music", StaticFiles(directory="/home/syntax/Downloads/Telegram Desktop/music/"), name='music')
+app.mount("/music", StaticFiles(directory="/root/alice/music/"), name='music')
 
-Base_url = "https://6ec8b338ec204b28-46-31-28-252.serveousercontent.com/music"
+Base_url = "https://127.0.0.1:5000/music"
 
 playlist = [
     {"id": "track_1", "title": "Разбуди", "file": "01_Разбуди.mp3"},
