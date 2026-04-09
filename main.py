@@ -62,7 +62,8 @@ async def alice(request: Request):
         file_name = track['file']
         encoded_file = quote(file_name)
         
-        track_url = f"https://sorokaa-bot.ru/music/{encoded_file}"
+        # track_url = f"https://sorokaa-bot.ru/music/{encoded_file}"
+        track_url = "https://yandex.net"
         
         print(f"DEBUG: Отправляю URL -> {track_url}")
         
