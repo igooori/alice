@@ -1,31 +1,24 @@
 from fastapi import FastAPI, Request
 import uvicorn
-from fastapi.staticfiles import StaticFiles
-import os
 import random
-from urllib.parse import quote
 from fastapi.responses import HTMLResponse 
-import urllib.parse
 
 app = FastAPI()
 
-app.mount("/music", StaticFiles(directory="/var/www/music/"), name='music')
-
-Base_url = "https://sorokaa-bot.ru/music"
-
 playlist = [
-    {"id": "track_1", "title": "Разбуди", "file": "01_Разбуди.mp3"},
-    {"id": "track_2", "title": "Мама просила", "file": "02_Мама_просила.mp3"},
-    {"id": "track_3", "title": "Мать земля", "file": "03_Мать_земля.mp3"},
-    {"id": "track_4", "title": "Темная сторона", "file": "04_Темная_сторона-SOROKAA.mp3"},
-    {"id": "track_5", "title": "Лес", "file": "05_Лес.mp3"},
-    {"id": "track_6", "title": "Манифест", "file": "06_Манифест-SOROKAA.mp3"},
-    {"id": "track_7", "title": "Тело", "file": "07_Тело.mp3"},
-    {"id": "track_8", "title": "Мне так", "file": "08_Мне_так.mp3"},
-    {"id": "track_9", "title": "Научи любить", "file": "09_Научи_любить.mp3"},
-    {"id": "track_10", "title": "Церемония", "file": "10_Церемония.mp3"},
-    {"id": "track_11", "title": "Умри печаль", "file": "11_Умри_печаль-SOROKAA.mp3"}
+    {
+        "id": "track_1", 
+        "title": "Разбуди", 
+        "audio_ids": [
+            "22b0f727-6feb-48bf-88d4-a021b50094a9", 
+            "6254af1e-a0b1-4717-ba9d-4c10677a8e91"
+        ]
+    },
+    # Сюда добавишь остальные треки по аналогии, когда загрузишь их в Ресурсы
 ]
+
+SKILL_ID = "a0dabc80-276f-40db-bcab-fe7e9c9c0e80"
+
 @app.get("/yandex_abed135471139a33.html")
 async def verify():
     content = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=UTF-8'></head><body>Verification: abed135471139a33</body></html>"
@@ -37,19 +30,8 @@ async def alice(request: Request):
     version = data.get("version")
     session = data.get("session", {})
     request_obj = data.get("request", {})
-    meta = data.get("meta", {})
-
-    req_type = request_obj.get("type")
-    
-    if req_type and "AudioPlayer" in req_type:
-        return {
-            "version": version,
-            "session": session,
-            "response": {"end_session": False}
-        }
 
     original = request_obj.get("original_utterance", "").lower()
-    intents = request_obj.get("nlu", {}).get("intents", {})
 
     if session.get("new"):
         return {
@@ -64,38 +46,23 @@ async def alice(request: Request):
 
     if not original or any(word in original for word in ["включи", "музык", "песн", "давай"]):
         track = random.choice(playlist)
-        file_name = track['file']
-        encoded_file = quote(file_name)
         
-        track_url = f"https://sorokaa-bot.ru/music/{encoded_file}"
-        # track_url = "https://yandex.net"
+        tts_parts = ""
+        for audio_id in track["audio_ids"]:
+            tts_parts += f"<speaker audio='dialogs-upload/{SKILL_ID}/{audio_id}.opus'>"
         
-        print(f"DEBUG: Отправляю URL -> {track_url}")
-        
+        print(f"DEBUG: Играю трек {track['title']}")
+
         return {
             "version": version,
             "session": session,
             "response": {
-                "text": f"Включаю {track['title']} группы Сорока",
-                "directives": {
-                    "audio_player": {
-                        "action": "Play",
-                        "item": {
-                            "stream": {
-                                "url": track_url,
-                                "offset_ms": 0,
-                                "token": str(track['id']) # Токен строго строкой
-                            },
-                            "metadata": {
-                                "title": track['title'],
-                                "sub_title": "Группа Сорока"
-                            }
-                        }
-                    }
-                },
-                "end_session": False
+                "text": f"Включаю песню {track['title']} группы Сорока.",
+                "tts": f"Включ+аю п+есню {track['title']} гр+уппы Сор+ока. {tts_parts}",
+                "end_session": False 
             }
         }
+
     return {
         "version": version,
         "session": session,
