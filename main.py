@@ -59,10 +59,12 @@ async def alice(request: Request):
 
     if not original or any(word in original for word in ["включи", "музык", "песн", "давай"]):
         track = random.choice(playlist)
-        encoded_file = quote(track['file'])
-        track_url = f"{Base_url.rstrip('/')}/{encoded_file}"
+        file_name = track['file']
+        encoded_file = quote(file_name)
         
-        print(f"Отправляю в Алису: {track_url}")
+        track_url = f"https://sorokaa-bot.ru/music/{encoded_file}"
+        
+        print(f"DEBUG: Отправляю URL -> {track_url}")
         
         return {
             "version": version,
@@ -76,7 +78,7 @@ async def alice(request: Request):
                             "stream": {
                                 "url": track_url,
                                 "offset_ms": 0,
-                                "token": str(track['id']) # Токен лучше всегда слать строкой
+                                "token": str(track['id']) # Токен строго строкой
                             },
                             "metadata": {
                                 "title": track['title'],
