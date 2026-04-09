@@ -7,7 +7,7 @@ from urllib.parse import quote
 
 app = FastAPI()
 
-app.mount("/music", StaticFiles(directory="/root/alice/music/"), name='music')
+app.mount("/music", StaticFiles(directory="/var/www/music/"), name='music')
 
 Base_url = "https://sorokaa-bot.ru/music"
 
