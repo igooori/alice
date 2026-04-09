@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 import random
 from urllib.parse import quote
+import urllib.parse
 
 app = FastAPI()
 
@@ -29,51 +30,29 @@ playlist = [
 async def alice(request: Request):
     data = await request.json() 
     version = data.get("version")
-    session = data.get("session")
+    session = data.get("session", {})
     request_obj = data.get("request", {})
     meta = data.get("meta", {})
 
     req_type = request_obj.get("type")
-    print(f"Тип запроса: {req_type}")
-
-    original = request_obj.get("original_utterance", "").lower()
-    intents = request_obj.get("nlu", {}).get("intents", {})
-
-    interfaces = meta.get("interfaces", {})
-    has_player = "audio_player" in interfaces
-    welcome_text = "Привет! Это официальный навык группы Сорока. Я могу включить наши песни. Просто скажите: включи музыку."
-    welcome_tts = "Прив+ет! Эио офици+альный н+авык гр+уппы Сор+ока. Я мог+у включ+ить н+аши п+есни. Пр+осто скаж+ите: включ+и м+узыку."
-    track = random.choice(playlist)
-    encoded_file = quote(track['file'])
-    track_url = f"{Base_url}/{encoded_file}"
-
+    
     if req_type and "AudioPlayer" in req_type:
-        if req_type == "AudioPlayer.PlaybackStarted":
-            print("Трек начал играть")
         return {
             "version": version,
             "session": session,
             "response": {"end_session": False}
         }
 
+    original = request_obj.get("original_utterance", "").lower()
+    intents = request_obj.get("nlu", {}).get("intents", {})
 
     if session.get("new"):
         return {
             "version": version,
             "session": session,
             "response": {
-                "text": welcome_text,
-                "tts": welcome_tts,
-                "end_session": False
-            }
-        }
-    if "YANDEX.HELP" in intents or "помощь" in original or "что ты умеешь" in original:
-        return {
-            "version": version,
-            "session": session,
-            "response": {
-                "text": "Я умею находить и включать песни группы Сорока. Чтобы начать слушать, скажите 'Включи музыку'. Что выберете?",
-                "tts": "Я ум+ею наход+ить и включ+ать п+есни гр+уппы Сор+ока. Чт+обы нач+ать сл+ушать, ск+ажите: включ+и м+узыку. Что выберете?",
+                "text": "Привет! Это официальный навык группы Сорока. Я могу включить наши песни. Просто скажите: включи музыку.",
+                "tts": "Прив+ет! Это офици+альный н+авык гр+уппы Сор+ока. Я мог+у включ+ить н+аши п+есни. Пр+осто скаж+ите: включ+и м+узыку.",
                 "end_session": False
             }
         }
@@ -97,7 +76,7 @@ async def alice(request: Request):
                             "stream": {
                                 "url": track_url,
                                 "offset_ms": 0,
-                                "token": track['id']
+                                "token": str(track['id']) # Токен лучше всегда слать строкой
                             },
                             "metadata": {
                                 "title": track['title'],
@@ -109,14 +88,11 @@ async def alice(request: Request):
                 "end_session": False
             }
         }
-    if request_obj.get("type") == "AudioPlayer.PlaybackStarted":
-        return {"version": version, "session": session, "response": {"end_session": False}}
     return {
         "version": version,
         "session": session,
         "response": {
-            "text": "Привет! Я могу включить музыку группы Сорока. Просто скажите: включи музыку.",
-            "tts": "Прив+ет! Я мог+у включ+ить м+узыку гр+уппы Сор+ока. Пр+осто скаж+ите: включ+и м+узыку.",
+            "text": "Я могу включить музыку группы Сорока. Скажите 'включи музыку'.",
             "end_session": False
         }
     }
