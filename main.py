@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 import random
 from urllib.parse import quote
+from fastapi.responses import HTMLResponse 
 import urllib.parse
 
 app = FastAPI()
@@ -25,6 +26,10 @@ playlist = [
     {"id": "track_10", "title": "Церемония", "file": "10_Церемония.mp3"},
     {"id": "track_11", "title": "Умри печаль", "file": "11_Умри_печаль-SOROKAA.mp3"}
 ]
+@app.get("/yandex_abed135471139a33.html")
+async def verify():
+    content = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=UTF-8'></head><body>Verification: abed135471139a33</body></html>"
+    return HTMLResponse(content=content)
 
 @app.post("/")
 async def alice(request: Request):
