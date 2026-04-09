@@ -9,7 +9,7 @@ app = FastAPI()
 
 app.mount("/music", StaticFiles(directory="/root/alice/music/"), name='music')
 
-Base_url = "https://127.0.0.1:5000/music"
+Base_url = "https://sorokaa-bot.ru/music"
 
 playlist = [
     {"id": "track_1", "title": "Разбуди", "file": "01_Разбуди.mp3"},
